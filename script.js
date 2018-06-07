@@ -11,6 +11,7 @@ const PADDLE_HEIGHT = 10;
 const PADDLE_COLOR = "white";
 
 var gameOver = false;
+var autoPlay = true;
 
 var paddle = {
     x: (CANVAS_WIDTH / 2) - (PADDLE_WIDTH / 2),
@@ -35,7 +36,7 @@ window.onload = function() {
 
     canvas.addEventListener("mousemove", function(evt) {
         var mousePos = calculateMousePos(evt);
-        paddle.y = mousePos.y - (PADDLE_WIDTH/2);
+        paddle.x = mousePos.x - (PADDLE_WIDTH/2);
     } );
 
     var framesPerSecond = 30;
@@ -48,23 +49,48 @@ window.onload = function() {
 }
 
 function moveEverything () {
+    if (gameOver) {
+        return;
+    }
+
     ball.x += ball.speedX;
     ball.y += ball.speedY;
 
     checkBall();
+
+    if (autoPlay) {
+        paddle.x = ball.x - PADDLE_WIDTH / 2;
+    }
+
+    // todo: add movement of paddle
 }
 
 function checkBall () {
     if (ball.x > canvas.width || ball.x <= 0) {
         ball.speedX *= -1;
-    } else if (ball.y > canvas.height || ball.y <= 0) {
+    } else if (ball.y <= 0) {
         ball.speedY *= -1;
-    }
+    } else if (ball.y >= canvas.height - PADDLE_HEIGHT && ball.x > paddle.x && 
+                ball.x < paddle.x + PADDLE_WIDTH) {
+        ball.speedY *= -1;
+        } else if (ball.y >= canvas.height) {
+            ballReset();
+        }
+}
+
+function ballReset () {
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height / 2;
 }
 
 function drawEverything () {
     colorRect (0, 0, canvas.width, canvas.height, BACKGROUND_COLOR);
-    colorCircle(ball.x, ball.y, BALL_RADIUS, BALL_COLOR);
+    if (gameOver) {
+        // todo: halt game and add function
+    } else {
+        colorCircle(ball.x, ball.y, BALL_RADIUS, BALL_COLOR);
+        colorRect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
+    }
 }
 
 function colorRect (x, y, width, height, color) {
